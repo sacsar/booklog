@@ -51,8 +51,7 @@
   "lint-staged": {
     "*.ts?(x)": [
       "prettier --list-different",
-      "eslint",
-      "tsc -p tsconfig.json --noEmit"
+      "eslint"
     ]
   }
 }

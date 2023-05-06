@@ -2,30 +2,47 @@
 
 import * as firebaseui from "firebaseui";
 import "firebaseui/dist/firebaseui.css";
-import { useContext, useEffect, useRef } from "react";
-import { AuthContext } from "../auth/AuthContext";
+import { useEffect, useRef } from "react";
+import { auth } from "../firebase";
+import { GoogleAuthProvider } from "firebase/auth";
 
-interface Props {
-  uiConfig: firebaseui.auth.Config;
-  uiCallback?(ui: firebaseui.auth.AuthUI): void;
-  className?: string;
-}
+const loginConfig: firebaseui.auth.Config = {
+  signInFlow: "popup",
+  signInOptions: [GoogleAuthProvider.PROVIDER_ID],
+  callbacks: {
+    // since we're handling this via the context, there's nothing to do here for now
+    signInSuccessWithAuthResult() {
+      return false;
+    },
+  },
+};
 
-export function Login({ uiConfig }: Props) {
-  const firebaseAuth = useContext(AuthContext);
+export function Login() {
   const elementRef = useRef(null);
 
   useEffect(() => {
-    if (uiConfig.signInFlow === "popup") {
-      firebaseAuth?.widget.reset();
+    const widget =
+      firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(auth);
+
+    if (loginConfig.signInFlow == "popup") {
+      widget.reset();
     }
 
-    console.log("in the effect");
+    const unregisterAuthObserver = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        widget.reset();
+      }
+    });
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    firebaseAuth?.widget.start(elementRef.current, uiConfig);
-  }, [uiConfig, firebaseAuth?.widget]);
+    widget.start(elementRef.current, loginConfig);
+
+    return () => {
+      unregisterAuthObserver();
+      widget.reset();
+    };
+  }, []);
 
   return <div ref={elementRef} />;
 }

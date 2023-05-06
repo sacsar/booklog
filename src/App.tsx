@@ -1,16 +1,12 @@
-import { useState } from "react";
 import "./App.css";
 import { Header } from "./stories/Header";
 import { Login } from "./components/Login";
-import { GoogleAuthProvider } from "firebase/auth";
+import { auth as fbAuth } from "./firebase";
+import { useAuth } from "./auth/AuthProvider";
 
 function App() {
-  const loginConfig: firebaseui.auth.Config = {
-    signInFlow: "popup",
-    signInOptions: [GoogleAuthProvider.PROVIDER_ID],
-  };
+  const auth = useAuth();
 
-  const [count, setCount] = useState(0);
   return (
     <>
       <Header
@@ -18,13 +14,11 @@ function App() {
           throw new Error("Function not implemented.");
         }}
         onLogout={function (): void {
-          throw new Error("Function not implemented.");
-        }}
-        onCreateAccount={function (): void {
-          throw new Error("Function not implemented.");
+          fbAuth.signOut();
+          // throw new Error("Function not implemented.");
         }}
       ></Header>
-      <Login uiConfig={loginConfig}></Login>
+      {auth?.loggedIn ? <>Hello</> : <Login />}
     </>
   );
 }
